@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연금복권720+ 참고용 번호 조합</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E🎫%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #666666;
+  --border: #e2e2e2;
+  --card: #f7f7f8;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --fg: #eaeaea;
+    --muted: #9a9a9a;
+    --border: #2c2f36;
+    --card: #1b1e24;
+    --accent: #5b9dff;
+    --accent-fg: #10131a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  line-height: 1.5;
+}
+
+main { max-width: 760px; margin: 0 auto; }
+
+header h1 { margin: 0 0 4px; font-size: 1.4rem; }
+
+.meta { color: var(--muted); font-size: 0.85rem; margin: 0 0 16px; }
+
+.disclaimer {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+
+button:hover { opacity: 0.85; }
+
+.cards { display: grid; gap: 10px; margin-bottom: 24px; }
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.card-index { color: var(--muted); font-size: 0.8rem; min-width: 3.5em; }
+
+.group {
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  white-space: nowrap;
+}
+
+.digits { display: flex; gap: 5px; }
+
+.digit {
+  width: 2em;
+  height: 2.4em;
+  display: grid;
+  place-items: center;
+  font-family: ui-monospace, "Consolas", monospace;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.copy { margin-left: auto; font-size: 0.8rem; padding: 6px 12px; }
+
+.rules { border-top: 1px solid var(--border); padding-top: 16px; }
+.rules h2 { font-size: 1rem; margin: 0 0 8px; }
+.rules table { border-collapse: collapse; font-size: 0.85rem; width: 100%; }
+.rules th, .rules td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--border); }
+.rules th { color: var(--muted); font-weight: 600; }
+
+@media (max-width: 480px) {
+  body { padding: 16px; }
+  .digit { width: 1.7em; font-size: 0.95rem; }
+  .copy { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>연금복권720+ 참고용 번호 조합</h1>
+    <p class="meta" id="meta">생성 중...</p>
+  </header>
+
+  <p class="disclaimer">
+    ⚠ 연금복권 추첨은 회차마다 완전히 독립적인 무작위 사건입니다. 과거 당첨번호나
+    특정 패턴은 다음 회차 결과에 아무 영향도 주지 않습니다(도박사의 오류).
+    아래 5개 조합은 <strong>예측이 아니라 무작위로 뽑은 참고용</strong>이며,
+    당첨 확률은 직접 아무 번호나 고르는 것과 완전히 동일합니다.
+  </p>
+
+  <div class="controls">
+    <button type="button" id="regen" class="primary">다시 생성</button>
+    <button type="button" id="copyAll">전체 복사</button>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <section class="rules">
+    <h2>당첨 구조</h2>
+    <table>
+      <thead>
+        <tr><th>등위</th><th>일치 조건</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1등</td><td>조 + 6자리 전부 일치</td></tr>
+        <tr><td>2등</td><td>조는 달라도 6자리 일치</td></tr>
+        <tr><td>3등</td><td>뒤 5자리 일치</td></tr>
+        <tr><td>4등</td><td>뒤 4자리 일치</td></tr>
+        <tr><td>5등</td><td>뒤 3자리 일치</td></tr>
+        <tr><td>6등</td><td>뒤 2자리 일치</td></tr>
+        <tr><td>7등</td><td>뒤 1자리 일치</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+// 연금복권720+ 한 장은 조(1~5) + 6자리 번호(000000~999999)로 이루어진다.
+var GROUP_COUNT = 5;
+var DIGIT_COUNT = 6;
+var COMBO_COUNT = 5;
+
+/**
+ * [0, max) 범위의 균등한 정수.
+ * crypto 값을 그냥 max로 나눈 나머지를 쓰면 2^32가 max로 나누어떨어지지
+ * 않는 한 작은 값 쪽이 더 자주 나오는 편향이 생긴다. 나누어떨어지는
+ * 구간을 벗어난 표본은 버리는 거부 표집으로 그 편향을 없앤다.
+ */
+function randomInt(max) {
+  var limit = Math.floor(0x100000000 / max) * max;
+  var buf = new Uint32Array(1);
+  var value;
+  do {
+    crypto.getRandomValues(buf);
+    value = buf[0];
+  } while (value >= limit);
+  return value % max;
+}
+
+function makeCombo() {
+  var digits = [];
+  for (var i = 0; i < DIGIT_COUNT; i++) {
+    digits.push(randomInt(10));
+  }
+  return { group: randomInt(GROUP_COUNT) + 1, digits: digits };
+}
+
+function comboToText(combo) {
+  return combo.group + "조 " + combo.digits.join("");
+}
+
+function render(combos) {
+  var container = document.getElementById("cards");
+  container.textContent = "";
+
+  combos.forEach(function (combo, index) {
+    var card = document.createElement("div");
+    card.className = "card";
+
+    var label = document.createElement("span");
+    label.className = "card-index";
+    label.textContent = "조합 " + (index + 1);
+    card.appendChild(label);
+
+    var group = document.createElement("span");
+    group.className = "group";
+    group.textContent = combo.group + "조";
+    card.appendChild(group);
+
+    var digits = document.createElement("div");
+    digits.className = "digits";
+    combo.digits.forEach(function (digit) {
+      var box = document.createElement("span");
+      box.className = "digit";
+      box.textContent = String(digit);
+      digits.appendChild(box);
+    });
+    card.appendChild(digits);
+
+    var copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "copy";
+    copy.textContent = "복사";
+    copy.addEventListener("click", function () {
+      copyText(comboToText(combo), copy, "복사");
+    });
+    card.appendChild(copy);
+
+    container.appendChild(card);
+  });
+
+  var stamp = new Date().toLocaleString("ko-KR");
+  document.getElementById("meta").textContent =
+    stamp + " 생성 · 매번 새로 뽑히며 저장되지 않습니다";
+}
+
+// 클립보드 API는 비보안 컨텍스트나 권한 거부 시 실패할 수 있어 결과를
+// 버튼 라벨로 알려준다.
+function copyText(text, button, original) {
+  navigator.clipboard.writeText(text).then(
+    function () { flash(button, "복사됨", original); },
+    function () { flash(button, "복사 실패", original); }
+  );
+}
+
+function flash(button, message, original) {
+  button.textContent = message;
+  setTimeout(function () { button.textContent = original; }, 1200);
+}
+
+var current = [];
+
+function generate() {
+  current = [];
+  for (var i = 0; i < COMBO_COUNT; i++) {
+    current.push(makeCombo());
+  }
+  render(current);
+}
+
+document.getElementById("regen").addEventListener("click", generate);
+
+document.getElementById("copyAll").addEventListener("click", function () {
+  var button = this;
+  copyText(current.map(comboToText).join("\n"), button, "전체 복사");
+});
+
+generate();
+</script>
+</body>
+</html>
