@@ -1,0 +1,55 @@
+# 줄바꿈 정규화 규칙
+# 저장소에는 항상 LF로 저장하고, 체크아웃 시에도 LF를 유지한다.
+# 각 개발자의 core.autocrlf 설정과 무관하게 동일하게 동작한다.
+
+* text=auto eol=lf
+
+# ── 소스 / 설정 (LF) ─────────────────────────────
+*.py     text eol=lf
+*.pyi    text eol=lf
+*.sh     text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+*.json   text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.toml   text eol=lf
+*.cfg    text eol=lf
+*.ini    text eol=lf
+*.html   text eol=lf
+*.css    text eol=lf
+*.js     text eol=lf
+*.svg    text eol=lf
+*.csv    text eol=lf
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+
+# ── Windows 전용 스크립트 (CRLF 필수) ────────────
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.ps1    text eol=crlf
+
+# ── 바이너리 (변환 금지) ─────────────────────────
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.webp   binary
+*.pdf    binary
+*.zip    binary
+*.gz     binary
+*.xlsx   binary
+*.xls    binary
+*.db     binary
+*.sqlite binary
+*.sqlite3 binary
+*.pkl    binary
+*.joblib binary
+*.h5     binary
+*.npy    binary
+*.pyc    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.otf    binary
