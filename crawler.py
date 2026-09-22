@@ -192,18 +192,43 @@ def crawl() -> dict:
     }
 
 
-def save(payload: dict) -> Path:
+def _content(payload: dict) -> str:
+    """수집 시각을 뺀 알맹이. 두 수집 결과가 같은지 비교하는 데 쓴다."""
+    return json.dumps(
+        {k: v for k, v in payload.items() if k != "updatedAt"},
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+
+
+def save(payload: dict) -> bool:
+    """내용이 실제로 바뀐 경우에만 파일을 다시 쓰고 True를 돌려준다.
+
+    updatedAt은 돌릴 때마다 달라지므로 그것까지 변경으로 보면 새 회차가
+    없는데도 매번 파일이 바뀐다. 주간 자동 갱신에서 빈 커밋이 쌓이지
+    않도록 회차·당첨금이 그대로면 기존 파일을 건드리지 않는다.
+    """
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    if DATA_FILE.exists():
+        try:
+            previous = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        except ValueError:
+            previous = None  # 깨진 파일은 새로 쓴다.
+        if previous is not None and _content(previous) == _content(payload):
+            return False
+
     text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     DATA_FILE.write_text(text + "\n", encoding="utf-8", newline="\n")
-    return DATA_FILE
+    return True
 
 
 if __name__ == "__main__":
     data = crawl()
-    path = save(data)
+    changed = save(data)
     print(
-        f"{len(data['draws'])}개 회차 저장 "
+        f"{len(data['draws'])}개 회차 "
         f"({data['draws'][0]['round']}~{data['latestRound']}회, "
-        f"{data['draws'][0]['date']}~{data['latestDate']}) -> {path}"
+        f"{data['draws'][0]['date']}~{data['latestDate']}) · "
+        + (f"{DATA_FILE} 갱신" if changed else "변경 없음")
     )

@@ -1,0 +1,59 @@
+name: Update draw data
+
+on:
+  schedule:
+    # 연금복권720+ 추첨은 매주 목요일 저녁(KST)이다. GitHub cron은 UTC 기준이라
+    # 목요일 21:30 KST(12:30 UTC)에 돌리고, 결과 반영 지연이나 실행 누락에
+    # 대비해 금요일 09:00 KST(00:00 UTC)에 한 번 더 시도한다.
+    # 두 번 다 돌아도 내용이 같으면 크롤러가 파일을 건드리지 않아 커밋은 생기지 않는다.
+    - cron: "30 12 * * 4"
+    - cron: "0 0 * * 5"
+  # 워크플로를 고친 뒤 다음 목요일까지 기다리지 않고 바로 검증할 수 있게 해 둔다.
+  push:
+    paths:
+      - ".github/workflows/update-data.yml"
+  workflow_dispatch:
+
+# data/pension720.json을 저장소에 되밀어야 하므로 쓰기 권한이 필요하다.
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Crawl
+        run: python crawler.py
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- data/pension720.json; then
+            echo "새 회차 없음 - 커밋 생략"
+            exit 0
+          fi
+
+          round=$(python -c "import json; print(json.load(open('data/pension720.json', encoding='utf-8'))['latestRound'])")
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/pension720.json
+          git commit -m "Update draw data through round ${round}"
+          git push
+
+          echo "${round}회까지 갱신했습니다."

@@ -19,7 +19,9 @@ pansion_lot/
 ├─ index.html                번호 생성 + 당첨 구조 + 통계 (단일 페이지)
 ├─ crawler.py                동행복권 당첨번호 수집기
 ├─ requirements.txt          크롤러 의존성
-└─ data/pension720.json      수집 결과 (페이지가 읽는 유일한 데이터)
+├─ data/pension720.json      수집 결과 (페이지가 읽는 유일한 데이터)
+└─ .github/workflows/
+   └─ update-data.yml        매주 목요일 자동 수집·커밋
 ```
 
 ## 번호 생성
@@ -57,8 +59,29 @@ python crawler.py
   최신 회차 것만 읽습니다.
 
 수집한 값은 회차 연속성, 조 범위(1~5), 6자리 형식을 검증한 뒤 저장합니다.
-추첨은 매주 목요일이므로 그 이후에 다시 실행하고 `data/pension720.json`을
-커밋하면 사이트에 반영됩니다.
+회차와 당첨금이 이전과 같으면 파일을 다시 쓰지 않습니다(수집 시각만 바뀐 경우는
+변경으로 보지 않음).
+
+## 자동 갱신
+
+`.github/workflows/update-data.yml`이 매주 크롤러를 돌리고, 새 회차가 있으면
+`data/pension720.json`을 커밋합니다. 그 푸시를 Cloudflare Pages가 받아 사이트를
+다시 배포하므로 별도 조작이 필요 없습니다.
+
+| 시점 | UTC cron | 목적 |
+|---|---|---|
+| 목 21:30 KST | `30 12 * * 4` | 추첨 당일 갱신 |
+| 금 09:00 KST | `0 0 * * 5` | 결과 반영 지연·실행 누락 대비 재시도 |
+
+내용이 같으면 커밋하지 않으므로 두 번 실행돼도 중복 커밋은 생기지 않습니다.
+Actions 페이지의 **Run workflow**로 수동 실행할 수도 있습니다.
+
+> 저장소 Settings → Actions → General → Workflow permissions가
+> **Read and write permissions**여야 푸시가 됩니다. 읽기 전용이면 마지막
+> `git push` 단계에서 403으로 실패합니다.
+>
+> GitHub은 60일간 저장소 활동이 없으면 예약 워크플로를 자동으로 중지합니다.
+> 매주 커밋이 생기는 동안은 해당되지 않습니다.
 
 ## 로컬 실행
 
