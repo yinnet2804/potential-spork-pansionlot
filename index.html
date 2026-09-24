@@ -90,6 +90,45 @@ button {
 button.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
 button:hover { opacity: 0.85; }
 
+.button-link {
+  display: inline-block;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.button-link:hover { opacity: 0.85; }
+
+/* ── 사용법 ─────────────────────────── */
+
+.howto {
+  font-size: 0.82rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.howto summary { cursor: pointer; color: var(--fg); font-size: 0.85rem; }
+.howto ol { margin: 10px 0 0; padding-left: 1.3em; }
+.howto li { margin-bottom: 4px; }
+.howto p { margin: 10px 0 0; }
+.howto strong { color: var(--fg); }
+
+kbd, code {
+  font-family: ui-monospace, "Consolas", monospace;
+  font-size: 0.92em;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 /* ── 조합 카드 ───────────────────────── */
 
 .cards { display: grid; gap: 10px; }
@@ -131,7 +170,9 @@ button:hover { opacity: 0.85; }
   border-radius: 6px;
 }
 
-.copy { margin-left: auto; font-size: 0.8rem; padding: 6px 12px; }
+.card-actions { margin-left: auto; display: flex; gap: 6px; }
+
+.copy { font-size: 0.8rem; padding: 6px 12px; }
 
 /* ── 표 ─────────────────────────────── */
 
@@ -192,7 +233,7 @@ footer a { color: var(--accent); }
 @media (max-width: 520px) {
   body { padding: 16px; }
   .digit { width: 1.7em; font-size: 0.95rem; }
-  .copy { margin-left: 0; }
+  .card-actions { margin-left: 0; }
   .bar-row { grid-template-columns: 2.6em 1fr; }
   .bar-value { grid-column: 2; }
 }
@@ -219,7 +260,32 @@ footer a { color: var(--accent); }
     <div class="controls">
       <button type="button" id="regen" class="primary">다시 생성</button>
       <button type="button" id="copyAll">전체 복사</button>
+      <button type="button" id="scriptAll">자동입력 스크립트</button>
+      <a class="button-link" href="https://dhlottery.co.kr/gameInfo.do?method=game720Method"
+         target="_blank" rel="noopener">동행복권에서 구매 ↗</a>
     </div>
+
+    <details class="howto">
+      <summary>자동입력 스크립트 쓰는 법</summary>
+      <ol>
+        <li><strong>자동입력</strong> 버튼을 눌러 복사합니다. 번호 대신 입력 코드가 클립보드에 담깁니다.</li>
+        <li>동행복권 연금복권720+ 구매 화면을 엽니다.</li>
+        <li><kbd>F12</kbd> 를 눌러 개발자도구를 열고 <strong>Console</strong> 탭으로 갑니다.</li>
+        <li>크롬이 붙여넣기를 막으면 콘솔에 <code>allow pasting</code> 을 입력하고 <kbd>Enter</kbd> 를 한 번 누릅니다.</li>
+        <li>붙여넣고 <kbd>Enter</kbd>. 조와 6자리가 화면에서 선택됩니다.</li>
+        <li>번호를 눈으로 확인한 뒤 <strong>구매 버튼은 직접</strong> 누르세요. 스크립트는 번호만 고르고 구매·결제에는 손대지 않습니다.</li>
+      </ol>
+      <p>
+        조합이 여러 개인 스크립트는 첫 장을 채운 뒤 멈춥니다. 그 장을 담고 나서 콘솔에
+        <code>PL720.next()</code> 를 입력하면 다음 조합을 채웁니다.
+      </p>
+      <p>
+        구매 화면이 iframe 안에 들어 있으면, 콘솔 왼쪽 위 <code>top</code> 드롭다운에서
+        구매 화면 프레임으로 바꾼 뒤 붙여넣으세요. 입력할 곳을 못 찾으면 스크립트는
+        아무것도 누르지 않고 진단 내용만 콘솔에 남깁니다.
+      </p>
+    </details>
+
     <div class="cards" id="cards"></div>
   </section>
 
@@ -355,13 +421,24 @@ function renderCombos(combos) {
     });
     card.appendChild(digits);
 
+    var actions = el("div", "card-actions");
+
     var copy = el("button", "copy", "복사");
     copy.type = "button";
     copy.addEventListener("click", function () {
       copyText(comboToText(combo), copy, "복사");
     });
-    card.appendChild(copy);
+    actions.appendChild(copy);
 
+    var script = el("button", "copy", "자동입력");
+    script.type = "button";
+    script.title = "구매 화면 콘솔에 붙여넣을 입력 코드를 복사합니다";
+    script.addEventListener("click", function () {
+      copyText(buildScript([combo]), script, "자동입력");
+    });
+    actions.appendChild(script);
+
+    card.appendChild(actions);
     container.appendChild(card);
   });
 
@@ -377,6 +454,262 @@ function generate() {
     current.push(makeCombo());
   }
   renderCombos(current);
+}
+
+/* ── 구매 화면 자동 입력 ────────────── */
+
+/**
+ * 동행복권 구매 화면 콘솔에 붙여넣을 코드. 이 페이지에서는 호출하지 않고
+ * toString()으로 소스만 꺼내 클립보드에 담는다. 그래서 이 함수 안에서는
+ * 바깥 스코프의 무엇도 참조하면 안 된다.
+ *
+ * 구매 화면은 로그인 뒤에 있어 DOM을 확인할 수 없었다. 그래서 id나 class 대신
+ * "보이는 글자가 정확히 N조인가", "0~9가 한 세로줄에 열 개 모여 있는가"처럼
+ * 화면에 드러난 것만 보고 찾는다. 표가 가로로 짜였는지 세로로 짜였는지에
+ * 기대지 않으려고 자리 묶기는 DOM이 아니라 화면 좌표로 한다.
+ * 확신이 서지 않으면 아무것도 누르지 않고 진단만 남긴다.
+ */
+function pensionAutofill(combos) {
+  var TAG = "[연금복권 자동입력]";
+  var SLOTS = combos[0].digits.length;
+  var cursor = 0;
+
+  function log(message, style) {
+    if (style) console.log("%c" + TAG + " " + message, style);
+    else console.log(TAG + " " + message);
+  }
+
+  function squeeze(node) {
+    return (node.textContent || "").replace(/\s+/g, "");
+  }
+
+  function visible(node) {
+    var rect = node.getBoundingClientRect();
+    if (!rect.width || !rect.height) return false;
+    var style = getComputedStyle(node);
+    return style.visibility !== "hidden" && style.display !== "none" && style.opacity !== "0";
+  }
+
+  /** 글자가 pattern과 정확히 맞는 요소들. 같은 글자를 감싼 바깥 요소는 버린다. */
+  function candidates(pattern) {
+    var found = [];
+    var all = document.querySelectorAll("a, button, label, li, span, div, td, th, p, strong, em, b, i");
+    for (var i = 0; i < all.length; i++) {
+      if (pattern.test(squeeze(all[i])) && visible(all[i])) found.push(all[i]);
+    }
+    return found.filter(function (node) {
+      return !found.some(function (other) { return other !== node && node.contains(other); });
+    });
+  }
+
+  function press(node) {
+    if (!node) return false;
+    if (node.tagName === "INPUT") {
+      if (!node.checked) node.click();
+      return !!node.checked;
+    }
+    node.click();
+    return true;
+  }
+
+  function setValue(input, value) {
+    var setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+    setter.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    return input.value === value;
+  }
+
+  /* 조(1~5) 찾기 — 드롭다운이면 값을 넣고, 버튼/라디오면 누른다. */
+
+  function findGroup() {
+    var selects = document.querySelectorAll("select");
+    for (var i = 0; i < selects.length; i++) {
+      if (!visible(selects[i])) continue;
+      var hit = 0;
+      for (var j = 0; j < selects[i].options.length; j++) {
+        if (/^[1-5]조$/.test(selects[i].options[j].text.replace(/\s+/g, ""))) hit++;
+      }
+      if (hit === 5) return { kind: "select", node: selects[i] };
+    }
+
+    // 한 화면에 여러 장이 있으면 조 버튼도 여러 벌이다. 숫자 칸과 같은 장을
+    // 고르도록 둘 다 화면 맨 위 한 벌만 쓴다.
+    var map = {};
+    candidates(/^[1-5]조$/).map(function (node) {
+      var rect = node.getBoundingClientRect();
+      return { node: node, key: squeeze(node).charAt(0), x: rect.left, y: rect.top };
+    }).sort(function (a, b) {
+      return (a.y - b.y) || (a.x - b.x);
+    }).forEach(function (item) {
+      if (!map[item.key]) map[item.key] = item.node;
+    });
+    return Object.keys(map).length === 5 ? { kind: "click", map: map } : null;
+  }
+
+  function setGroup(control, group) {
+    if (control.kind !== "select") return press(control.map[String(group)]);
+
+    var select = control.node;
+    for (var i = 0; i < select.options.length; i++) {
+      if (select.options[i].text.replace(/\s+/g, "") === group + "조") {
+        select.selectedIndex = i;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /* 6자리 찾기 — 한 글자 입력칸이거나, 0~9 버튼이 열 개씩 늘어선 세로줄이다. */
+
+  function digitColumns() {
+    var items = candidates(/^[0-9]$/).map(function (node) {
+      var rect = node.getBoundingClientRect();
+      return {
+        node: node,
+        digit: squeeze(node),
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        w: rect.width
+      };
+    });
+
+    items.sort(function (a, b) { return a.x - b.x; });
+
+    var columns = [];
+    items.forEach(function (item) {
+      var last = columns[columns.length - 1];
+      if (last && Math.abs(item.x - last.x) <= Math.max(item.w * 0.6, 6)) last.items.push(item);
+      else columns.push({ x: item.x, items: [item] });
+    });
+
+    var full = [];
+    columns.forEach(function (column) {
+      column.items.sort(function (a, b) { return a.y - b.y; });
+      var map = {};
+      for (var i = 0; i < column.items.length; i++) {
+        // 숫자가 되풀이되면 거기서부터는 다른 장의 표다. 맨 위 한 벌만 쓴다.
+        if (column.items[i].digit in map) break;
+        map[column.items[i].digit] = column.items[i].node;
+      }
+      if (Object.keys(map).length === 10) full.push({ x: column.x, map: map });
+    });
+
+    return full;
+  }
+
+  function findDigits() {
+    var boxes = [];
+    var inputs = document.querySelectorAll("input");
+    for (var i = 0; i < inputs.length; i++) {
+      var input = inputs[i];
+      if (input.type === "radio" || input.type === "checkbox" || input.type === "hidden") continue;
+      if (input.disabled || input.readOnly || !visible(input)) continue;
+      if (input.maxLength === 1) boxes.push(input);
+    }
+    if (boxes.length >= SLOTS) return { kind: "input", nodes: boxes.slice(0, SLOTS) };
+
+    var columns = digitColumns();
+    if (columns.length >= SLOTS) return { kind: "click", columns: columns.slice(0, SLOTS) };
+    return null;
+  }
+
+  function setDigits(control, digits) {
+    var done = 0;
+    digits.forEach(function (digit, slot) {
+      if (control.kind === "input") {
+        if (setValue(control.nodes[slot], String(digit))) done++;
+      } else if (press(control.columns[slot].map[String(digit)])) {
+        done++;
+      }
+    });
+    return done;
+  }
+
+  /* 실행 */
+
+  function diagnose(group, digits) {
+    log("입력할 곳을 못 찾아 아무것도 누르지 않았습니다.", "color:#d33;font-weight:bold");
+    if (!group) log("· 조 선택(1조~5조)을 못 찾았습니다.");
+    if (!digits) log("· 0~9 숫자 칸 " + SLOTS + "개를 못 찾았습니다.");
+    if (window.top !== window.self) {
+      log("· 지금 " + location.host + " 프레임에서 실행 중입니다.");
+    } else if (document.querySelector("iframe")) {
+      log("· 이 페이지에 iframe이 있습니다. 콘솔 왼쪽 위 'top' 드롭다운에서 " +
+          "구매 화면 프레임으로 바꾼 뒤 다시 붙여넣어 보세요.");
+    }
+    console.log(TAG + " 진단", {
+      url: location.href,
+      select: document.querySelectorAll("select").length,
+      radio: document.querySelectorAll('input[type="radio"]').length,
+      조후보: candidates(/^[1-5]조$/).length,
+      숫자후보: candidates(/^[0-9]$/).length,
+      숫자세로줄: digitColumns().length
+    });
+    log("위 진단 내용을 알려주시면 찾는 방식을 맞춰 드릴 수 있습니다.");
+  }
+
+  function fill(index) {
+    var combo = combos[index];
+    if (!combo) {
+      log("조합 " + (index + 1) + "번은 없습니다. 전체 " + combos.length + "개입니다.");
+      return false;
+    }
+
+    var group = findGroup();
+    var digits = findDigits();
+    if (!group || !digits) {
+      diagnose(group, digits);
+      return false;
+    }
+
+    var groupOk = setGroup(group, combo.group);
+    var digitsOk = setDigits(digits, combo.digits);
+    var all = groupOk && digitsOk === SLOTS;
+
+    log("조합 " + (index + 1) + " → " + combo.group + "조 " + combo.digits.join("") +
+        " · 조 " + (groupOk ? "선택됨" : "실패") + ", 숫자 " + digitsOk + "/" + SLOTS + "칸");
+    log(all ? "화면에서 번호를 확인한 뒤 구매 버튼은 직접 누르세요."
+            : "일부만 입력됐습니다. 화면을 직접 확인하세요.",
+        all ? "color:#0a7;font-weight:bold" : "color:#d33;font-weight:bold");
+    return all;
+  }
+
+  var api = {
+    combos: combos,
+    fill: function (number) { return fill(number - 1); },
+    next: function () {
+      if (cursor >= combos.length) {
+        log("남은 조합이 없습니다. PL720.fill(1) 로 처음부터 다시 넣을 수 있습니다.");
+        return false;
+      }
+      return fill(cursor++);
+    },
+    list: function () {
+      combos.forEach(function (combo, index) {
+        log("조합 " + (index + 1) + ": " + combo.group + "조 " + combo.digits.join(""));
+      });
+    }
+  };
+
+  log(combos.length + "개 조합 준비됨. 번호만 고르고 구매·결제 버튼은 누르지 않습니다.");
+  api.next();
+  if (combos.length > 1) {
+    log("이 장을 담은 뒤 PL720.next() 를 입력하면 다음 조합을 넣습니다. " +
+        "(PL720.fill(3) 은 3번 조합, PL720.list() 는 목록)");
+  }
+
+  window.PL720 = api;
+  return api;
+}
+
+/** pensionAutofill의 소스에 조합을 붙여 콘솔에 붙여넣을 한 덩어리로 만든다. */
+function buildScript(combos) {
+  return "/* 연금복권720+ 자동 입력 — 동행복권 구매 화면 콘솔에 붙여넣으세요.\n" +
+         "   " + combos.map(comboToText).join(" / ") + "\n" +
+         "   번호만 고르고 구매·결제 버튼은 누르지 않습니다. */\n" +
+         "(" + pensionAutofill.toString() + ")(" + JSON.stringify(combos) + ");";
 }
 
 /* ── 당첨 구조 ──────────────────────── */
@@ -536,6 +869,9 @@ function loadData() {
 document.getElementById("regen").addEventListener("click", generate);
 document.getElementById("copyAll").addEventListener("click", function () {
   copyText(current.map(comboToText).join("\n"), this, "전체 복사");
+});
+document.getElementById("scriptAll").addEventListener("click", function () {
+  copyText(buildScript(current), this, "자동입력 스크립트");
 });
 
 generate();
