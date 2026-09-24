@@ -105,15 +105,26 @@ button:hover { opacity: 0.85; }
 
 /* ── 북마클릿 설치 안내 ─────────────── */
 
+/* 매번 볼 내용이 아니라 접어 둔다. 설치는 한 번뿐이다. */
 .setup {
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 10px 14px;
   margin-bottom: 16px;
   background: var(--card);
 }
 
-.setup-title { margin: 0 0 10px; font-size: 0.9rem; font-weight: 600; }
+.setup[open] { padding-bottom: 14px; }
+
+.setup-title {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.setup-title span { font-weight: 400; }
+.setup[open] .setup-title { margin-bottom: 12px; color: var(--fg); }
 
 .setup-step {
   margin: 0 0 8px;
@@ -318,8 +329,8 @@ footer a { color: var(--accent); }
          target="_blank" rel="noopener">동행복권에서 구매 ↗</a>
     </div>
 
-    <div class="setup">
-      <p class="setup-title">구매 화면에 붙여넣기</p>
+    <details class="setup">
+      <summary class="setup-title">구매 화면에 자동으로 넣기 <span>(북마크 1회 설치)</span></summary>
       <p class="setup-step">
         <span class="step-no">1</span>
         <span>아래 버튼을 <strong>북마크바로 끌어다 놓으세요</strong>. 처음 한 번만 하면 됩니다.</span>
@@ -348,7 +359,7 @@ footer a { color: var(--accent); }
         </p>
         <p><button type="button" id="scriptAll">콘솔용 코드 복사</button></p>
       </details>
-    </div>
+    </details>
 
     <div class="cards" id="cards"></div>
   </section>
