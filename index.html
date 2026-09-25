@@ -662,20 +662,39 @@ function pensionAutofill(combos) {
 
   /* ── 어느 문서에 폼이 있는지 ── */
 
-  /** 구매 폼이 iframe 안일 수 있다. 같은 출처면 들어가서 찾는다. */
+  /** 구매 폼이 iframe 안일 수 있다. 같은 출처면 들어가서 찾는다. 프레임 속 프레임까지. */
   function documents() {
     var docs = [document];
-    var frames = document.querySelectorAll("iframe, frame");
-    for (var i = 0; i < frames.length; i++) {
-      try {
-        if (frames[i].contentDocument && frames[i].contentDocument.body) {
-          docs.push(frames[i].contentDocument);
+    for (var i = 0; i < docs.length; i++) {
+      var frames = docs[i].querySelectorAll("iframe, frame");
+      for (var j = 0; j < frames.length; j++) {
+        try {
+          var inner = frames[j].contentDocument;
+          if (inner && inner.body && docs.indexOf(inner) < 0) docs.push(inner);
+        } catch (e) {
+          // 다른 출처의 프레임은 들여다볼 수 없다. walls()가 대신 알려 준다.
         }
-      } catch (e) {
-        // 다른 출처의 프레임은 들여다볼 수 없다. 건너뛴다.
       }
     }
     return docs;
+  }
+
+  /** 못 들어간 프레임. 콘솔 context를 그쪽으로 바꿔야 한다는 근거가 된다. */
+  function walls() {
+    var out = [];
+    documents().forEach(function (doc) {
+      var frames = doc.querySelectorAll("iframe, frame");
+      for (var i = 0; i < frames.length; i++) {
+        var readable = false;
+        try {
+          readable = !!(frames[i].contentDocument && frames[i].contentDocument.body);
+        } catch (e) {
+          readable = false;
+        }
+        if (!readable) out.push(frames[i].src || frames[i].name || "(주소 없음)");
+      }
+    });
+    return out;
   }
 
   function findTarget(slots) {
@@ -690,28 +709,34 @@ function pensionAutofill(combos) {
   }
 
   function explain(slots) {
-    var here = scope(document);
-    var groups = here.candidates(/^[1-5]조$/).length;
-    var columns = here.digitColumns().length;
-    var frames = document.querySelectorAll("iframe, frame").length;
+    var docs = documents();
+    var seen = [];
+    var groups = 0;
+    var columns = 0;
 
-    var hint = "";
-    if (!groups && !columns) {
-      hint = frames
-        ? "\n구매 화면이 다른 창이나 프레임에 있는 것 같습니다.\n구매 화면 위에서 눌러 주세요."
-        : "\n여기는 구매 화면이 아닌 것 같습니다.";
-    }
-    say("번호 칸을 못 찾아 아무것도 누르지 않았습니다." +
-        "\n조 후보 " + groups + "개, 0~9 세로줄 " + columns + "개, 프레임 " + frames + "개" + hint, true);
-
-    console.log(TAG + " 진단", {
-      url: location.href,
-      select: document.querySelectorAll("select").length,
-      radio: document.querySelectorAll('input[type="radio"]').length,
-      조후보: groups,
-      숫자세로줄: columns,
-      프레임: frames
+    docs.forEach(function (doc) {
+      var here = scope(doc);
+      var g = here.candidates(/^[1-5]조$/).length;
+      var c = here.digitColumns().length;
+      groups += g;
+      columns += c;
+      seen.push({
+        문서: doc.location ? doc.location.href : "(알 수 없음)",
+        조후보: g,
+        숫자세로줄: c
+      });
     });
+
+    var blocked = walls();
+    var hint = blocked.length
+      ? "\n다른 출처라 못 들어간 프레임이 " + blocked.length + "개 있습니다." +
+        "\n콘솔 왼쪽 위 top 선택창을 그 프레임으로 바꾸고 다시 붙여넣으세요."
+      : "\n여기는 구매 화면이 아닌 것 같습니다.";
+
+    say("번호 칸을 못 찾아 아무것도 누르지 않았습니다." +
+        "\n문서 " + docs.length + "개에서 조 후보 " + groups + "개, 0~9 세로줄 " + columns + "개" + hint, true);
+
+    console.log(TAG + " 진단", { 문서: seen, 못들어간프레임: blocked });
   }
 
   /* ── 실행 ── */
