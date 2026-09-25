@@ -103,9 +103,9 @@ button:hover { opacity: 0.85; }
 
 .button-link:hover { opacity: 0.85; }
 
-/* ── 북마클릿 설치 안내 ─────────────── */
+/* ── 붙여넣기 안내 ─────────────────── */
 
-/* 매번 볼 내용이 아니라 접어 둔다. 설치는 한 번뿐이다. */
+/* 매번 볼 내용이 아니라 접어 둔다. */
 .setup {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -150,40 +150,7 @@ button:hover { opacity: 0.85; }
 
 .setup-step strong, .setup-note strong { color: var(--fg); }
 
-.setup-drag { margin: 0 0 12px 2.1em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-/* 끌어다 놓으라고 만든 링크라 클릭이 아니라 드래그가 기본 동작이다. */
-.bookmarklet {
-  display: inline-block;
-  padding: 9px 18px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-fg);
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: grab;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
-}
-
-.bookmarklet:active { cursor: grabbing; }
-
-.drag-hint { font-size: 0.78rem; color: var(--muted); }
-
 .setup-note { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
-
-.howto {
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin: 12px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-
-.howto summary { cursor: pointer; font-size: 0.82rem; }
-.howto p { margin: 10px 0 0; }
-.howto strong { color: var(--fg); }
-.howto button { font-size: 0.82rem; padding: 6px 14px; background: var(--bg); }
 
 kbd, code {
   font-family: ui-monospace, "Consolas", monospace;
@@ -325,40 +292,30 @@ footer a { color: var(--accent); }
     <div class="controls">
       <button type="button" id="regen" class="primary">다시 생성</button>
       <button type="button" id="copyAll">전체 복사</button>
+      <button type="button" id="scriptAll">📋 코드 복사</button>
       <a class="button-link" href="https://dhlottery.co.kr/gameInfo.do?method=game720Method"
          target="_blank" rel="noopener">동행복권에서 구매 ↗</a>
     </div>
 
     <details class="setup">
-      <summary class="setup-title">구매 화면에 자동으로 넣기 <span>(북마크 1회 설치)</span></summary>
+      <summary class="setup-title">📋 코드 복사가 뭔가요? <span>(구매 화면에 붙여넣으면 번호가 대신 눌립니다)</span></summary>
       <p class="setup-step">
         <span class="step-no">1</span>
-        <span>아래 버튼을 <strong>북마크바로 끌어다 놓으세요</strong>. 처음 한 번만 하면 됩니다.</span>
-      </p>
-      <p class="setup-drag">
-        <a class="bookmarklet" id="bookmarklet" href="#" draggable="true">🎫 번호 넣기</a>
-        <span class="drag-hint">← 끌어다 놓기</span>
+        <span><strong>📋 코드 복사</strong> 를 누릅니다. 위 번호가 코드 안에 들어갑니다.</span>
       </p>
       <p class="setup-step">
         <span class="step-no">2</span>
-        <span>번호를 <strong>복사</strong>하고, 구매 화면에서 그 북마크를 <strong>클릭</strong>하세요.</span>
+        <span>구매 화면에서 <kbd>F12</kbd> 를 누르고 <strong>Console</strong> 탭을 엽니다.</span>
+      </p>
+      <p class="setup-step">
+        <span class="step-no">3</span>
+        <span><kbd>Ctrl</kbd>+<kbd>V</kbd> 로 붙여넣고 <kbd>Enter</kbd>.</span>
       </p>
       <p class="setup-note">
-        조와 6자리가 대신 눌립니다. 여러 개를 복사했다면 한 장을 담은 뒤 북마크를 다시
-        누르면 다음 조합으로 넘어갑니다. <strong>구매·결제 버튼은 누르지 않습니다.</strong>
+        조와 6자리가 대신 눌립니다. 조합이 여러 개면 한 장을 담은 뒤 <code>PL720.next()</code> 를
+        입력하면 다음 조합이 들어갑니다. 크롬이 붙여넣기를 막으면 <code>allow pasting</code> 을
+        한 번 입력하세요. <strong>구매·결제 버튼은 누르지 않습니다.</strong>
       </p>
-      <details class="howto">
-        <summary>북마크바가 안 보이거나, 북마크를 못 쓸 때</summary>
-        <p>
-          크롬·엣지에서 북마크바는 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> 로 켭니다.
-        </p>
-        <p>
-          그래도 안 되면 아래 버튼으로 코드를 복사해, 구매 화면에서 <kbd>F12</kbd> →
-          <strong>Console</strong> 탭에 붙여넣으세요. 크롬이 붙여넣기를 막으면 콘솔에
-          <code>allow pasting</code> 을 한 번 입력하면 됩니다.
-        </p>
-        <p><button type="button" id="scriptAll">콘솔용 코드 복사</button></p>
-      </details>
     </details>
 
     <div class="cards" id="cards"></div>
@@ -498,7 +455,7 @@ function renderCombos(combos) {
 
     var actions = el("div", "card-actions");
 
-    // 북마클릿이 클립보드를 읽으므로 복사 버튼은 하나면 된다.
+    // 번호만 복사한다. 자동 입력은 위의 코드 복사가 맡는다.
     var copy = el("button", "copy", "복사");
     copy.type = "button";
     copy.addEventListener("click", function () {
@@ -529,39 +486,18 @@ function generate() {
 /**
  * 구매 화면에서 조와 6자리를 대신 눌러 주는 코드.
  *
- * 이 페이지에서는 실행하지 않는다. toString()으로 소스만 꺼내 북마클릿과
- * 콘솔용 코드로 만들기 때문에, 이 함수 안에서 바깥 스코프의 무엇도 참조하면
- * 붙여넣은 쪽에서 깨진다.
- *
- * combos가 null이면 클립보드에서 읽는다(막히면 붙여넣기 창을 띄운다) — 북마클릿
- * 경로다. mode "toast"는 화면 구석에 결과를 띄우고, "console"은 콘솔에 찍는다.
- * 구매 화면에는 콘솔이 열려 있지 않으므로 북마클릿은 반드시 toast를 쓴다.
+ * 이 페이지에서는 실행하지 않는다. toString()으로 소스만 꺼내 붙여넣을 코드를
+ * 만들기 때문에, 이 함수 안에서 바깥 스코프의 무엇도 참조하면 붙여넣은 쪽에서
+ * 깨진다. 번호는 combos로 코드 안에 박아 주고, 결과는 콘솔에 찍는다.
+ * 붙여넣은 직후라 콘솔이 이미 열려 있다.
  */
-function pensionAutofill(combos, mode) {
+function pensionAutofill(combos) {
   var TAG = "[연금복권]";
-  var toast = mode === "toast";
   var cursor = 0;
 
   function say(message, bad) {
-    if (!toast) {
-      console.log("%c" + TAG + " " + message.replace(/\n/g, " "),
-                  bad ? "color:#d33;font-weight:bold" : "color:#0a7;font-weight:bold");
-      return;
-    }
-    var box = document.getElementById("pl720-toast");
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "pl720-toast";
-      box.style.cssText = "position:fixed;z-index:2147483647;right:16px;bottom:16px;max-width:20em;" +
-        "padding:13px 15px;border-radius:10px;white-space:pre-line;color:#fff;cursor:pointer;" +
-        "font:14px/1.55 -apple-system,'Malgun Gothic',sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.35)";
-      box.onclick = function () { box.remove(); };
-      document.body.appendChild(box);
-    }
-    box.style.background = bad ? "#8f1d1d" : "#15603a";
-    box.textContent = message;
-    clearTimeout(box.timer);
-    box.timer = setTimeout(function () { box.remove(); }, bad ? 15000 : 7000);
+    console.log("%c" + TAG + " " + message.replace(/\n/g, " "),
+                bad ? "color:#d33;font-weight:bold" : "color:#0a7;font-weight:bold");
   }
 
   function squeeze(node) {
@@ -768,65 +704,14 @@ function pensionAutofill(combos, mode) {
     say("번호 칸을 못 찾아 아무것도 누르지 않았습니다." +
         "\n조 후보 " + groups + "개, 0~9 세로줄 " + columns + "개, 프레임 " + frames + "개" + hint, true);
 
-    if (!toast) {
-      console.log(TAG + " 진단", {
-        url: location.href,
-        select: document.querySelectorAll("select").length,
-        radio: document.querySelectorAll('input[type="radio"]').length,
-        조후보: groups,
-        숫자세로줄: columns,
-        프레임: frames
-      });
-    }
-  }
-
-  /* ── 클립보드에서 번호 읽기 ── */
-
-  function parseCombos(text) {
-    var found = [];
-    var strict = /([1-5])\s*조\s*[-–—:]?\s*(\d{6})/g;
-    var match;
-    while ((match = strict.exec(text))) {
-      found.push({ group: Number(match[1]), digits: match[2].split("").map(Number) });
-    }
-    if (found.length) return found;
-
-    // "조"를 빼고 복사했을 수도 있다: "3 482913", "3-482913", "3482913"
-    var loose = /(^|[^\d])([1-5])[\s,.\-]*(\d{6})([^\d]|$)/g;
-    while ((match = loose.exec(text))) {
-      found.push({ group: Number(match[2]), digits: match[3].split("").map(Number) });
-      loose.lastIndex -= 1;
-    }
-    return found;
-  }
-
-  function ask() {
-    var typed = prompt("복사한 번호를 붙여넣으세요 (Ctrl+V 후 확인)", "");
-    return typed || "";
-  }
-
-  function readClipboard() {
-    if (!navigator.clipboard || !navigator.clipboard.readText) {
-      return Promise.resolve(ask());
-    }
-    return navigator.clipboard.readText().then(
-      function (text) { return text || ask(); },
-      ask
-    );
-  }
-
-  /* ── 조합이 여러 개일 때 어디까지 넣었는지 ── */
-
-  function nextIndex(source, count) {
-    var store = null;
-    try { store = sessionStorage; } catch (e) { store = null; }
-    if (!store) return 0;
-
-    var saved = null;
-    try { saved = JSON.parse(store.getItem("pl720")); } catch (e) { saved = null; }
-    var index = (saved && saved.source === source) ? (saved.index + 1) % count : 0;
-    try { store.setItem("pl720", JSON.stringify({ source: source, index: index })); } catch (e) { /* 무시 */ }
-    return index;
+    console.log(TAG + " 진단", {
+      url: location.href,
+      select: document.querySelectorAll("select").length,
+      radio: document.querySelectorAll('input[type="radio"]').length,
+      조후보: groups,
+      숫자세로줄: columns,
+      프레임: frames
+    });
   }
 
   /* ── 실행 ── */
@@ -850,20 +735,19 @@ function pensionAutofill(combos, mode) {
     }
 
     var more = list.length > 1
-      ? "\n(" + (index + 1) + "/" + list.length + ") " +
-        (toast ? "이 장을 담고 북마크를 다시 누르면 다음 조합" : "다음은 PL720.next()")
+      ? "\n(" + (index + 1) + "/" + list.length + ") 다음 조합은 PL720.next()"
       : "";
     say(label + " 넣었습니다.\n확인하고 구매 버튼은 직접 누르세요." + more);
     return true;
   }
 
-  function start(list, source) {
+  function start(list) {
     if (!list.length) {
-      say("번호를 못 읽었습니다.\n이 페이지에서 번호를 복사한 뒤 다시 눌러 주세요.", true);
+      say("번호가 없습니다.\n페이지에서 코드를 다시 복사해 주세요.", true);
       return;
     }
 
-    cursor = toast ? nextIndex(source, list.length) : 0;
+    cursor = 0;
     fill(list, cursor);
 
     window.PL720 = {
@@ -878,21 +762,15 @@ function pensionAutofill(combos, mode) {
     };
   }
 
-  if (combos && combos.length) start(combos, JSON.stringify(combos));
-  else readClipboard().then(function (text) { start(parseCombos(text), text); });
+  start(combos || []);
 }
 
-/** 북마크바에 올려 두는 링크. 번호를 품지 않고 클립보드에서 읽으므로 한 번만 올리면 된다. */
-function buildBookmarklet() {
-  return "javascript:" + encodeURIComponent("(" + pensionAutofill.toString() + ")(null,'toast');void 0;");
-}
-
-/** 북마크를 못 쓸 때 쓰는 콘솔용 코드. 번호를 코드 안에 박아 둔다. */
+/** 구매 화면 콘솔에 붙여넣을 코드. 번호를 코드 안에 박아 둔다. */
 function buildConsoleScript(combos) {
   return "/* 연금복권720+ 자동 입력 — 구매 화면 콘솔에 붙여넣으세요.\n" +
          "   " + combos.map(comboToText).join(" / ") + "\n" +
          "   번호만 고르고 구매·결제 버튼은 누르지 않습니다. */\n" +
-         "(" + pensionAutofill.toString() + ")(" + JSON.stringify(combos) + ",'console');";
+         "(" + pensionAutofill.toString() + ")(" + JSON.stringify(combos) + ");";
 }
 
 /* ── 당첨 구조 ──────────────────────── */
@@ -1054,17 +932,7 @@ document.getElementById("copyAll").addEventListener("click", function () {
   copyText(current.map(comboToText).join("\n"), this, "전체 복사");
 });
 document.getElementById("scriptAll").addEventListener("click", function () {
-  copyText(buildConsoleScript(current), this, "콘솔용 코드 복사");
-});
-
-// 번호를 품지 않고 클립보드에서 읽으므로 한 번 만들어 두면 다시 바꿀 일이 없다.
-var bookmarklet = document.getElementById("bookmarklet");
-bookmarklet.href = buildBookmarklet();
-bookmarklet.addEventListener("click", function (event) {
-  // 여기서 누르면 이 페이지에는 구매 폼이 없어 실패 메시지만 뜬다. 눌러야 할 곳을 알려준다.
-  event.preventDefault();
-  alert("이 버튼은 누르는 게 아니라 북마크바로 끌어다 놓는 것입니다.\n\n" +
-        "끌어다 놓은 뒤, 번호를 복사하고 동행복권 구매 화면에서 그 북마크를 누르세요.");
+  copyText(buildConsoleScript(current), this, "📋 코드 복사");
 });
 
 generate();
